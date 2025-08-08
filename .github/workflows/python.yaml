@@ -25,7 +25,7 @@ jobs:
       - name: "Set up Python"
         uses: actions/setup-python@v5
         with:
-          python-version-file: ".python-version"
+          python-version-file: "./session-management/.python-version"
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:
@@ -43,7 +43,7 @@ jobs:
       - name: "Set up Python"
         uses: actions/setup-python@v5
         with:
-          python-version-file: ".python-version"
+          python-version-file: "./session-management/.python-version"
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:
@@ -56,6 +56,6 @@ jobs:
       - name: Store coverage HTML
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-html
-          path: htmlcov
+          name: python-coverage-html
+          path: session-management/htmlcov
           include-hidden-files: true
