@@ -1,0 +1,21 @@
+[project]
+name = "session-management"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.116.1",
+]
+
+[tool.uv]
+compile-bytecode = true
+link-mode = "copy"
+package = true
+dev-dependencies = [
+    "coverage==7.10.2",
+    "mypy==1.17.1",
+    "pre-commit==4.2.0",
+    "pytest==8.4.1",
+    "ruff==0.12.8",
+]

@@ -1,0 +1,10 @@
+services:
+  session-management:
+    build:
+      context: ./session-management
+      dockerfile: Dockerfile
+      target: develop
+    volumes:
+      - .:/workspace
+      - /workspace/session-management/.venv
+    command: sleep infinity
