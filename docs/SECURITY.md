@@ -17,7 +17,7 @@ oauth:
   flow: "PKCE"
   scopes: ["openid", "profile", "email"]
   redirect_uri: "https://app.pokerbankroll.com/callback"
-  
+
 # JWT Configuration
 jwt:
   algorithm: "RS256"
