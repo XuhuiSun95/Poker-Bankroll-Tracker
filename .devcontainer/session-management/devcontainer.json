@@ -1,0 +1,39 @@
+{
+    "name": "session-management",
+    "dockerComposeFile": ["../../docker-compose.yaml"],
+    "service": "session-management",
+    "shutdownAction": "none",
+    "workspaceFolder": "/workspace/session-management",
+    "postCreateCommand": "scripts/setup-env.sh",
+    "settings": {
+        "python.defaultInterpreterPath": ".venv/bin/python"
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/sshd:1": {},
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/dapr/cli/dapr-cli:0": {},
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.mypy-type-checker",
+                "charliermarsh.ruff",
+                "ms-python.debugpy",
+                "redhat.vscode-yaml",
+                "ms-azuretools.vscode-docker"
+            ],
+            "settings": {
+                "[python]": {
+                    "editor.formatOnSave": true,
+                    "editor.codeActionsOnSave": {
+                        "source.fixAll": "explicit",
+                        "source.organizeImports": "explicit"
+                    },
+                    "editor.defaultFormatter": "charliermarsh.ruff"
+                }
+            }
+        }
+    }
+}

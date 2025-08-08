@@ -1,0 +1,43 @@
+[project]
+name = "session-management"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.116.1",
+    "strawberry-graphql[fastapi]>=0.278.1",
+]
+
+[tool.uv]
+compile-bytecode = true
+link-mode = "copy"
+package = true
+dev-dependencies = [
+    "coverage==7.10.2",
+    "mypy==1.17.1",
+    "pre-commit==4.2.0",
+    "pytest==8.4.1",
+    "ruff==0.12.8",
+]
+
+[tool.mypy]
+strict = true
+exclude = ["venv", ".venv", "alembic"]
+plugins = ["pydantic.mypy", "strawberry.ext.mypy_plugin"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade old syntax
+    "ARG001", # unused arguments in functions
+]
+
+[tool.ruff.lint.pyupgrade]
+# Preserve types, even if a file imports `from __future__ import annotations`.
+keep-runtime-typing = true

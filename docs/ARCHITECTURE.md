@@ -120,4 +120,4 @@ Redis + RedisTimeSeries  ClickHouse           Ray Cluster
 - **Event Ordering**: Careful handling required for event replay consistency and ordering
 - **Performance Optimization**: SSE updates may require debouncing for optimal frontend performance
 - **GraphQL Complexity**: Schema design and query optimization for complex poker analytics
-- **BI Tool Integration**: ClickHouse provides superior integration with Superset and other BI tools 
+- **BI Tool Integration**: ClickHouse provides superior integration with Superset and other BI tools
