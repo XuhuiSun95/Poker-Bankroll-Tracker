@@ -19,3 +19,24 @@ dev-dependencies = [
     "pytest==8.4.1",
     "ruff==0.12.8",
 ]
+
+[tool.mypy]
+strict = true
+exclude = ["venv", ".venv", "alembic"]
+plugins = ["pydantic.mypy"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade old syntax
+    "ARG001", # unused arguments in functions
+]
+
+[tool.ruff.lint.pyupgrade]
+# Preserve types, even if a file imports `from __future__ import annotations`.
+keep-runtime-typing = true
