@@ -9,6 +9,7 @@
         "python.defaultInterpreterPath": ".venv/bin/python"
     },
     "features": {
+        "ghcr.io/devcontainers/features/sshd:1": {},
         "ghcr.io/devcontainers/features/git:1": {},
         "ghcr.io/dapr/cli/dapr-cli:0": {},
         "ghcr.io/devcontainers/features/docker-in-docker:2": {}
