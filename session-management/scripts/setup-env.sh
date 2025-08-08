@@ -2,4 +2,5 @@
 set -x
 
 uv sync
+pre-commit install
 dapr init
