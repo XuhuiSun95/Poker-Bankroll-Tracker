@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.116.1",
+    "strawberry-graphql[fastapi]>=0.278.1",
 ]
 
 [tool.uv]
@@ -23,7 +24,7 @@ dev-dependencies = [
 [tool.mypy]
 strict = true
 exclude = ["venv", ".venv", "alembic"]
-plugins = ["pydantic.mypy"]
+plugins = ["pydantic.mypy", "strawberry.ext.mypy_plugin"]
 
 [tool.ruff.lint]
 select = [
