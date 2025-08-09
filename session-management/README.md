@@ -20,7 +20,7 @@ This doc outlines the planned GraphQL contract for session tracking. It aligns w
   - `playerName: String!`
   - `playerLocation: PlayerLocation!`
   - `gameType: GameType!`
-  - `game: GameStake!` (union of `CashStake` or `TournamentStake`)
+  - `game: GameStakeType!` (union of `CashStake` or `TournamentStake`)
   - `buyIn: Money!`
   - `startTime: DateTime!`
   - `stopTime: DateTime`
@@ -33,7 +33,7 @@ This doc outlines the planned GraphQL contract for session tracking. It aligns w
   - `createdAt: DateTime!`
   - `updatedAt: DateTime!`
 
-- **GameStake** (union)
+- **GameStakeType** (union)
   - `CashStake`
     - `smallBlindCents: Int!`
     - `bigBlindCents: Int!`
