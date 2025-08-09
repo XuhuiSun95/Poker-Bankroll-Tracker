@@ -7,11 +7,12 @@ async def test_query_session(client: AsyncClient) -> None:
     query = """
         query MyQuery {
           session {
+            status
+            version
+            playerName
+            gameType
+            buyIn { amountCents currency }
             createdAt
-            description
-            id
-            name
-            updatedAt
           }
         }
     """
@@ -20,12 +21,12 @@ async def test_query_session(client: AsyncClient) -> None:
         json={"query": query},
     )
     assert response.status_code == 200
-    assert "session" in response.json()["data"]
-    assert "createdAt" in response.json()["data"]["session"]
-    assert "description" in response.json()["data"]["session"]
-    assert "id" in response.json()["data"]["session"]
-    assert "name" in response.json()["data"]["session"]
-    assert "updatedAt" in response.json()["data"]["session"]
+    data = response.json()["data"]["session"]
+    assert data["playerName"] == "test"
+    assert data["gameType"] == "CASH_GAME"
+    assert data["buyIn"]["amountCents"] == 100
+    assert data["buyIn"]["currency"] == "USD"
+    assert "status" in data and "version" in data and "createdAt" in data
 
 
 @pytest.mark.anyio
@@ -33,11 +34,10 @@ async def test_mutation_create_session(client: AsyncClient) -> None:
     mutation = """
         mutation MyMutation {
           createSession(name: "test") {
-            id
-            name
+            playerName
+            gameType
+            playerLocation { displayName }
             createdAt
-            description
-            updatedAt
           }
         }
     """
@@ -46,9 +46,8 @@ async def test_mutation_create_session(client: AsyncClient) -> None:
         json={"query": mutation},
     )
     assert response.status_code == 200
-    assert "createSession" in response.json()["data"]
-    assert "id" in response.json()["data"]["createSession"]
-    assert response.json()["data"]["createSession"]["name"] == "test"
-    assert "createdAt" in response.json()["data"]["createSession"]
-    assert "description" in response.json()["data"]["createSession"]
-    assert "updatedAt" in response.json()["data"]["createSession"]
+    data = response.json()["data"]["createSession"]
+    assert data["playerName"] == "test"
+    assert data["gameType"] == "TOURNAMENT"
+    assert data["playerLocation"]["displayName"] == "test"
+    assert "createdAt" in data

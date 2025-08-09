@@ -1,3 +1,5 @@
+from typing import Annotated
+
 import strawberry
 
 from ..models.stakes import CashStake, TournamentStake
@@ -13,4 +15,7 @@ class TournamentStakeType:
     pass
 
 
-GameStakeType = strawberry.union("GameStakeType", (CashStakeType, TournamentStakeType))
+GameStakeType = Annotated[
+    CashStakeType | TournamentStakeType,
+    strawberry.union("GameStakeType"),
+]
