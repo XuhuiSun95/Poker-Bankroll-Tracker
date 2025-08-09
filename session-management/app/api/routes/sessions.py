@@ -1,6 +1,7 @@
 import datetime
 
 import strawberry
+from dapr.clients import DaprClient
 
 from ...api.deps import IsAuthenticated
 from ...models.enums import GameType, LocationSource, SessionStatus
@@ -13,54 +14,54 @@ from ...schemas import SessionType
 
 @strawberry.type
 class Query:
-    @strawberry.field(graphql_type=SessionType, name="currentSession")  # type: ignore[misc]
-    def current_session(self) -> Session:
-        # For now, return the same demo payload as `session`
-        return Session(
-            status=SessionStatus.ACTIVE,
-            version=0,
-            player_name="test",
-            player_location=PlayerLocation(
-                display_name="test",
-                geo=GeoPoint(latitude=-33.8688, longitude=151.2093),
-                address="test",
-                place_id="test",
-                source=LocationSource.GEOIP,
-            ),
-            game_type=GameType.CASH_GAME,
-            game=CashStake(small_blind_cents=100, big_blind_cents=200, ante_cents=0),
-            buy_in=Money(amount_cents=100, currency="USD"),
-            start_time=datetime.datetime.now(),
-            stop_time=None,
-            cashout_time=None,
-            created_at=datetime.datetime.now(),
-            updated_at=datetime.datetime.now(),
-        )
-
-    @strawberry.field(name="hasCurrentSession", permission_classes=[IsAuthenticated])  # type: ignore[misc]
-    def has_current_session(self, info: strawberry.Info) -> bool:
+    @strawberry.field(
+        graphql_type=SessionType | None,
+        permission_classes=[IsAuthenticated],
+    )  # type: ignore[misc]
+    async def current_session(self, info: strawberry.Info) -> Session | None:
         user_id = info.context["current_user"].sub
-        print(user_id)
-        # Stubbed as true for demo; will reflect Redis state later
-        return True
+        with DaprClient() as client:
+            state = client.get_state(
+                store_name="redis-state-store",
+                key=f"user:{user_id}",
+            )
+            if state.data:
+                return Session.model_validate_json(state.data)
+        return None
+
+    @strawberry.field(permission_classes=[IsAuthenticated])  # type: ignore[misc]
+    async def has_current_session(self, info: strawberry.Info) -> bool:
+        user_id = info.context["current_user"].sub
+        with DaprClient() as client:
+            state = client.get_state(
+                store_name="redis-state-store",
+                key=f"user:{user_id}",
+            )
+            if state.data:
+                return True
+        return False
 
 
 @strawberry.type
 class Mutation:
-    @strawberry.field(graphql_type=SessionType, name="startSession")  # type: ignore[misc]
-    def start_session(
+    @strawberry.field(
+        graphql_type=SessionType,
+        permission_classes=[IsAuthenticated],
+    )  # type: ignore[misc]
+    async def start_session(
         self,
         player_name: str,
         player_location_display_name: str,
         game_type: GameType,
+        info: strawberry.Info,
     ) -> Session:
-        # Minimal stub matching README start example (truncated args for demo)
+        user_id = info.context["current_user"].sub
         stake = (
             CashStake(small_blind_cents=100, big_blind_cents=200, ante_cents=0)
             if game_type == GameType.CASH_GAME
             else TournamentStake()
         )
-        return Session(
+        session = Session(
             status=SessionStatus.ACTIVE,
             version=0,
             player_name=player_name,
@@ -80,3 +81,10 @@ class Mutation:
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
         )
+        with DaprClient() as client:
+            client.save_state(
+                store_name="redis-state-store",
+                key=f"user:{user_id}",
+                value=session.model_dump_json(),
+            )
+        return session
