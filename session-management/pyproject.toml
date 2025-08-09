@@ -5,9 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "cryptography>=45.0.6",
     "fastapi[standard]>=0.116.1",
     "pycountry>=24.6.1",
     "pydantic-extra-types>=2.10.5",
+    "pydantic-settings>=2.10.1",
+    "pyjwt>=2.10.1",
     "strawberry-graphql[fastapi]>=0.278.1",
 ]
 

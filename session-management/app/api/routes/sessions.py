@@ -12,8 +12,9 @@ from ...schemas import SessionType
 
 @strawberry.type
 class Query:
-    @strawberry.field(graphql_type=SessionType)  # type: ignore[misc]
-    def session(self) -> Session:
+    @strawberry.field(graphql_type=SessionType, name="currentSession")  # type: ignore[misc]
+    def current_session(self) -> Session:
+        # For now, return the same demo payload as `session`
         return Session(
             status=SessionStatus.ACTIVE,
             version=0,
@@ -35,25 +36,41 @@ class Query:
             updated_at=datetime.datetime.now(),
         )
 
+    @strawberry.field(name="hasCurrentSession")  # type: ignore[misc]
+    def has_current_session(self) -> bool:
+        # Stubbed as true for demo; will reflect Redis state later
+        return True
+
 
 @strawberry.type
 class Mutation:
-    @strawberry.field(graphql_type=SessionType)  # type: ignore[misc]
-    def create_session(self, name: str) -> Session:
+    @strawberry.field(graphql_type=SessionType, name="startSession")  # type: ignore[misc]
+    def start_session(
+        self,
+        player_name: str,
+        player_location_display_name: str,
+        game_type: GameType,
+    ) -> Session:
+        # Minimal stub matching README start example (truncated args for demo)
+        stake = (
+            CashStake(small_blind_cents=100, big_blind_cents=200, ante_cents=0)
+            if game_type == GameType.CASH_GAME
+            else TournamentStake()
+        )
         return Session(
             status=SessionStatus.ACTIVE,
             version=0,
-            player_name=name,
+            player_name=player_name,
             player_location=PlayerLocation(
-                display_name="test",
+                display_name=player_location_display_name,
                 geo=GeoPoint(latitude=0, longitude=0),
-                address="test",
-                place_id="test",
-                source=LocationSource.GEOIP,
+                address=None,
+                place_id=None,
+                source=LocationSource.USER_INPUT,
             ),
-            game_type=GameType.TOURNAMENT,
-            game=TournamentStake(),
-            buy_in=Money(amount_cents=100, currency="USD"),
+            game_type=game_type,
+            game=stake,
+            buy_in=Money(amount_cents=20000, currency="USD"),
             start_time=datetime.datetime.now(),
             stop_time=None,
             cashout_time=None,
