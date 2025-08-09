@@ -3,12 +3,17 @@ from fastapi import APIRouter
 from strawberry.fastapi import GraphQLRouter
 from strawberry.tools import merge_types
 
+from ..schemas.scalar import scalars_mapping
 from .routes import sessions
 
 query = merge_types("Query", (sessions.Query,))
 mutation = merge_types("Mutation", (sessions.Mutation,))
 
-schema = strawberry.Schema(query=query, mutation=mutation)
+schema = strawberry.Schema(
+    query=query,
+    mutation=mutation,
+    scalar_overrides=scalars_mapping,  # type: ignore[arg-type]
+)
 graphql_app = GraphQLRouter(schema)
 
 api_router = APIRouter()
