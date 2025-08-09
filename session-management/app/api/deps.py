@@ -17,7 +17,7 @@ from ..models.token import TokenPayload, TokenPayloadError
 application_scopes = {
     f"{resource}:{action}": f"{action.title()} {resource}"
     for resource in ["session"]
-    for action in ["create", "read", "update", "delete"]
+    for action in ["read", "write"]
     if settings.OIDC_APPLICATION_SCOPES_ENABLED
 }
 

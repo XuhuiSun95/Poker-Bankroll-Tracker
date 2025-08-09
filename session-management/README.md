@@ -13,7 +13,15 @@ This doc outlines the planned GraphQL contract for session tracking. It aligns w
 - **Content-Type**: `application/json`
 - **Auth**: The service associates sessions with the authenticated user via Keycloak OIDC. The `user_id` is derived from the access token (validated via JWKS). Clients do not provide any user identifiers in inputs.
 
-### Core Types (conceptual)
+### Environment variables
+- `OIDC_AUTHORIZATION_URL` (required): OIDC authorization URL
+- `OIDC_TOKEN_URL` (required): OIDC token URL
+- `OIDC_JWKS_URL` (required): JWKS URL
+- `OIDC_CLIENT_ID` (optional): Default `poker-bankroll-tracker`
+- `OIDC_PERMITTED_AUDIENCES` (optional): Default `["account"]`
+- `OIDC_APPLICATION_SCOPES_ENABLED` (optional, default `false`): when `true`, enforce `session:read` (queries/subscriptions) and `session:write` (mutations). DevOps must provision these scopes/roles in the IdP (e.g., Keycloak).
+
+### Core Types
 - **Session**: Represents a poker session (for the current user)
   - `status: SessionStatus!`
   - `version: Int!` (monotonically increasing; used for optimistic concurrency)
@@ -165,9 +173,32 @@ Note: Monetary amounts are expressed in minor units (e.g., cents) to avoid float
 - **Subscriptions**
   - `sessionEvents: SessionEvent!` (streams real-time events for the current user's session)
 
+Implementation status
+- Implemented: `currentSession`, `hasCurrentSession`, `startSession` (temporary simplified args)
+- Planned: `appendSessionEvents`, `endSession`, `discardSession`, `sessionEvents`
+
 ### Examples
 
-Start a session:
+Start a session (current impl):
+
+```graphql
+mutation Start {
+  startSession(
+    playerName: "Alice"
+    playerLocationDisplayName: "Bellagio, Las Vegas"
+    gameType: CASH_GAME
+  ) {
+    status
+    version
+    playerName
+    gameType
+    buyIn { amountCents currency }
+    createdAt
+  }
+}
+```
+
+Start a session (planned input signature):
 
 ```graphql
 mutation Start {
