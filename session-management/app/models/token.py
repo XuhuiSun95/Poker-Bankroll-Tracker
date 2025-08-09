@@ -6,3 +6,9 @@ class TokenPayload(BaseModel):
     scope: str
     name: str
     email: str
+
+
+class TokenPayloadError(BaseModel):
+    status_code: int
+    detail: str
+    headers: dict[str, str]

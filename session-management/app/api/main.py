@@ -7,18 +7,22 @@ from strawberry.tools import merge_types
 
 from ..models.token import TokenPayload
 from ..schemas.scalar import scalars_mapping
-from .deps import get_current_oidc_user
+from .deps import get_current_oidc_user, get_current_oidc_user_graphql_context
 from .routes import sessions
 
 query = merge_types("Query", (sessions.Query,))
 mutation = merge_types("Mutation", (sessions.Mutation,))
+
 
 schema = strawberry.Schema(
     query=query,
     mutation=mutation,
     scalar_overrides=scalars_mapping,  # type: ignore[arg-type]
 )
-graphql_app = GraphQLRouter(schema)
+graphql_app = GraphQLRouter(
+    schema,
+    context_getter=get_current_oidc_user_graphql_context,  # type: ignore[arg-type]
+)
 
 api_router = APIRouter()
 api_router.include_router(graphql_app, prefix="/graphql")

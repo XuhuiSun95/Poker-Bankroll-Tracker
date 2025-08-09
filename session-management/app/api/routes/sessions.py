@@ -2,6 +2,7 @@ import datetime
 
 import strawberry
 
+from ...api.deps import IsAuthenticated
 from ...models.enums import GameType, LocationSource, SessionStatus
 from ...models.location import GeoPoint, PlayerLocation
 from ...models.money import Money
@@ -36,8 +37,10 @@ class Query:
             updated_at=datetime.datetime.now(),
         )
 
-    @strawberry.field(name="hasCurrentSession")  # type: ignore[misc]
-    def has_current_session(self) -> bool:
+    @strawberry.field(name="hasCurrentSession", permission_classes=[IsAuthenticated])  # type: ignore[misc]
+    def has_current_session(self, info: strawberry.Info) -> bool:
+        user_id = info.context["current_user"].sub
+        print(user_id)
         # Stubbed as true for demo; will reflect Redis state later
         return True
 
