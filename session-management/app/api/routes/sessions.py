@@ -1,15 +1,10 @@
-import datetime
-
 import strawberry
 from dapr.clients import DaprClient
 
 from ...api.deps import IsAuthenticated
-from ...models.enums import GameType, LocationSource, SessionStatus
-from ...models.location import GeoPoint, PlayerLocation
-from ...models.money import Money
-from ...models.session import Session
-from ...models.stakes import CashStake, TournamentStake
-from ...schemas import SessionType
+from ...models.enums import SessionStatus
+from ...models.session import EndSession, Session, StartSession
+from ...schemas.session import EndSessionInput, SessionType, StartSessionInput
 
 
 @strawberry.type
@@ -50,41 +45,72 @@ class Mutation:
     )  # type: ignore[misc]
     async def start_session(
         self,
-        player_name: str,
-        player_location_display_name: str,
-        game_type: GameType,
+        input: StartSessionInput,
         info: strawberry.Info,
     ) -> Session:
         user_id = info.context["current_user"].sub
-        stake = (
-            CashStake(small_blind_cents=100, big_blind_cents=200, ante_cents=0)
-            if game_type == GameType.CASH_GAME
-            else TournamentStake()
-        )
-        session = Session(
-            status=SessionStatus.ACTIVE,
-            version=0,
-            player_name=player_name,
-            player_location=PlayerLocation(
-                display_name=player_location_display_name,
-                geo=GeoPoint(latitude=0, longitude=0),
-                address=None,
-                place_id=None,
-                source=LocationSource.USER_INPUT,
-            ),
-            game_type=game_type,
-            game=stake,
-            buy_in=Money(amount_cents=20000, currency="USD"),
-            start_time=datetime.datetime.now(),
-            stop_time=None,
-            cashout_time=None,
-            created_at=datetime.datetime.now(),
-            updated_at=datetime.datetime.now(),
-        )
         with DaprClient() as client:
+            state = client.get_state(
+                store_name="redis-state-store",
+                key=f"user:{user_id}",
+            )
+            if state.data:
+                raise Exception("Session already exists")
+            session = StartSession(
+                status=SessionStatus.ACTIVE,
+                version=1,
+                **strawberry.asdict(input),
+            )
             client.save_state(
                 store_name="redis-state-store",
                 key=f"user:{user_id}",
                 value=session.model_dump_json(),
+                state_metadata={"ttlInSeconds": "172800"},
             )
-        return session
+            return session
+
+    @strawberry.field(
+        graphql_type=SessionType,
+        permission_classes=[IsAuthenticated],
+    )  # type: ignore[misc]
+    async def end_session(
+        self,
+        input: EndSessionInput,
+        info: strawberry.Info,
+    ) -> Session:
+        user_id = info.context["current_user"].sub
+        with DaprClient() as client:
+            state = client.get_state(
+                store_name="redis-state-store",
+                key=f"user:{user_id}",
+            )
+            if not state.data:
+                raise Exception("No active session")
+            session = Session.model_validate_json(state.data)
+            if session.status == SessionStatus.ENDED:
+                raise Exception("Session already ended")
+            session = EndSession(
+                **(session.model_dump(exclude_unset=True) | strawberry.asdict(input))
+            )
+            client.save_state(
+                store_name="redis-state-store",
+                key=f"user:{user_id}",
+                value=session.model_dump_json(),
+                state_metadata={"ttlInSeconds": "1800"},
+            )
+            return session
+
+    @strawberry.field(permission_classes=[IsAuthenticated])  # type: ignore[misc]
+    async def discard_session(self, info: strawberry.Info) -> bool:
+        user_id = info.context["current_user"].sub
+        with DaprClient() as client:
+            state = client.get_state(
+                store_name="redis-state-store",
+                key=f"user:{user_id}",
+            )
+            if state.data:
+                client.delete_state(
+                    store_name="redis-state-store",
+                    key=f"user:{user_id}",
+                )
+        return True

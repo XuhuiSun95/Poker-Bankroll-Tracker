@@ -1,21 +1,13 @@
-from typing import Annotated
-
 import strawberry
 
-from ..models.stakes import CashStake, TournamentStake
+from ..models.stakes import GameStake
 
 
-@strawberry.experimental.pydantic.type(model=CashStake, all_fields=True)
-class CashStakeType:
+@strawberry.experimental.pydantic.type(model=GameStake, all_fields=True)
+class GameStakeType:
     pass
 
 
-@strawberry.experimental.pydantic.type(model=TournamentStake, all_fields=True)
-class TournamentStakeType:
+@strawberry.experimental.pydantic.input(model=GameStake, all_fields=True)
+class GameStakeInput:
     pass
-
-
-GameStakeType = Annotated[
-    CashStakeType | TournamentStakeType,
-    strawberry.union("GameStakeType"),
-]

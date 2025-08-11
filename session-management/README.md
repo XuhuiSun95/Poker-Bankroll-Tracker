@@ -28,7 +28,7 @@ This doc outlines the planned GraphQL contract for session tracking. It aligns w
   - `playerName: String!`
   - `playerLocation: PlayerLocation!`
   - `gameType: GameType!`
-  - `game: GameStakeType!` (union of `CashStake` or `TournamentStake`)
+  - `gameStack: GameStake!`
   - `buyIn: Money!`
   - `startTime: DateTime!`
   - `stopTime: DateTime`
@@ -41,15 +41,10 @@ This doc outlines the planned GraphQL contract for session tracking. It aligns w
   - `createdAt: DateTime!`
   - `updatedAt: DateTime!`
 
-- **GameStakeType** (union)
-  - `CashStake`
-    - `smallBlindCents: Int!`
-    - `bigBlindCents: Int!`
-    - `anteCents: Int` (0 or omitted if no ante)
-  - `TournamentStake`
-    - `smallBlindCents: Int`
-    - `bigBlindCents: Int`
-    - `anteCents: Int`
+- **GameStake**
+  - `smallBlindCents: Int!`
+  - `bigBlindCents: Int!`
+  - `anteCents: Int` (0 or omitted if no ante)
 
 - **GameType**
   - Enum representing the session type
@@ -116,9 +111,9 @@ Note: Monetary amounts are expressed in minor units (e.g., cents) to avoid float
   - `startTime: DateTime!`
 
 - `GameStakeInput`
-  - `smallBlindCents: Int` (optional for `TOURNAMENT`; required for `CASH_GAME`)
-  - `bigBlindCents: Int` (optional for `TOURNAMENT`; required for `CASH_GAME`)
-  - `anteCents: Int` (optional; may be omitted for `TOURNAMENT`)
+  - `smallBlindCents: Int!`
+  - `bigBlindCents: Int!`
+  - `anteCents: Int` (optional; default to 0 when no pass)
 
 - `PlayerLocationInput`
   - `displayName: String`
@@ -220,10 +215,7 @@ mutation Start {
     playerName
     playerLocation { displayName geo { latitude longitude } }
     gameType
-    game {
-      ... on CashStake { smallBlindCents bigBlindCents anteCents }
-      ... on TournamentStake { smallBlindCents bigBlindCents anteCents }
-    }
+    gameStack { smallBlindCents bigBlindCents anteCents }
     buyIn { amountCents currency }
     startTime
     createdAt
@@ -253,10 +245,7 @@ mutation StartTournament {
     playerName
     playerLocation { displayName geo { latitude longitude } }
     gameType
-    game {
-      ... on CashStake { smallBlindCents bigBlindCents anteCents }
-      ... on TournamentStake { smallBlindCents bigBlindCents anteCents }
-    }
+    gameStack { smallBlindCents bigBlindCents anteCents }
     buyIn { amountCents currency }
     startTime
     createdAt
@@ -328,10 +317,7 @@ query GetOne {
       source
     }
     gameType
-    game {
-      ... on CashStake { smallBlindCents bigBlindCents anteCents }
-      ... on TournamentStake { smallBlindCents bigBlindCents anteCents }
-    }
+    gameStack { smallBlindCents bigBlindCents anteCents }
     buyIn { amountCents currency }
     startTime
     stopTime
