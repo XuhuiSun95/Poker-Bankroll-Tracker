@@ -3,7 +3,7 @@ name = "session-management"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "cryptography>=45.0.6",
     "dapr>=1.15.0",
@@ -15,17 +15,19 @@ dependencies = [
     "strawberry-graphql[fastapi]>=0.278.1",
 ]
 
-[tool.uv]
-compile-bytecode = true
-link-mode = "copy"
-package = true
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "coverage==7.10.2",
     "mypy==1.17.1",
     "pre-commit==4.2.0",
     "pytest==8.4.1",
     "ruff==0.12.8",
 ]
+
+[tool.uv]
+compile-bytecode = true
+link-mode = "copy"
+package = true
 
 [tool.setuptools.packages.find]
 where = ["app"]
