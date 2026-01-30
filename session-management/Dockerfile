@@ -1,6 +1,6 @@
 # Install uv
-FROM python:3.13-slim AS develop
-COPY --from=ghcr.io/astral-sh/uv:0.7.19 /uv /uvx /bin/
+FROM python:3.14-slim AS develop
+COPY --from=ghcr.io/astral-sh/uv:0.9.10 /uv /uvx /bin/
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 ENV UV_PYTHON_DOWNLOADS=0
 
@@ -16,10 +16,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev
 
 # Copy the environment, but not the source code
-FROM python:3.13-slim
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    rm -rf /var/lib/apt/lists/*
+FROM gcr.io/distroless/python3
 COPY --from=builder --chown=app:app /app /app
 
 # Expose the port

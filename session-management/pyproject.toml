@@ -3,23 +3,34 @@ name = "session-management"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
+    "cryptography>=45.0.6",
+    "dapr>=1.15.0",
     "fastapi[standard]>=0.116.1",
+    "pycountry>=24.6.1",
+    "pydantic-extra-types>=2.10.5",
+    "pydantic-settings>=2.10.1",
+    "pyjwt>=2.10.1",
     "strawberry-graphql[fastapi]>=0.278.1",
+]
+
+[dependency-groups]
+dev = [
+    "coverage==7.12.0",
+    "mypy==1.18.2",
+    "pre-commit==4.4.0",
+    "pytest==9.0.1",
+    "ruff==0.14.5",
 ]
 
 [tool.uv]
 compile-bytecode = true
 link-mode = "copy"
 package = true
-dev-dependencies = [
-    "coverage==7.10.2",
-    "mypy==1.17.1",
-    "pre-commit==4.2.0",
-    "pytest==8.4.1",
-    "ruff==0.12.8",
-]
+
+[tool.setuptools.packages.find]
+where = ["app"]
 
 [tool.mypy]
 strict = true

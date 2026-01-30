@@ -8,3 +8,7 @@ services:
       - .:/workspace
       - /workspace/session-management/.venv
     command: sleep infinity
+    environment:
+      - OIDC_AUTHORIZATION_URL=https://iam.local-v2.xuhuisun.com/realms/local-v2/protocol/openid-connect/auth
+      - OIDC_TOKEN_URL=https://iam.local-v2.xuhuisun.com/realms/local-v2/protocol/openid-connect/token
+      - OIDC_JWKS_URL=https://iam.local-v2.xuhuisun.com/realms/local-v2/protocol/openid-connect/certs
