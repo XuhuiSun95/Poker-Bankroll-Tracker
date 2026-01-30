@@ -44,6 +44,23 @@ Embedded Superset Dashboards
 | **Analytics DB** | ClickHouse         | High-performance historical analytics         |
 | **AI/ML**        | Ray                | Tilt detection and behavioral recommendations |
 | **Dashboards**   | Superset           | Embedded user-facing analytics                |
+| **Identity**     | Keycloak           | OIDC identity provider with PKCE              |
+| **Service Mesh** | Istio              | mTLS, JWT validation, traffic management      |
+| **Authorization**| OPA                | Policy-based access control                   |
+
+---
+
+## 🔐 Authentication & Authorization
+
+The platform implements a zero-trust security model using **Keycloak** (OIDC with PKCE), **Istio** service mesh (mTLS + JWT validation), and **OPA** (policy-based authorization).
+
+**Key Components**:
+- **Keycloak**: Identity provider using OIDC authorization code flow with PKCE
+- **Istio Gateway**: Validates JWT tokens at the edge and injects claims into headers
+- **Istio Service Mesh**: Enforces mTLS for secure service-to-service communication
+- **OPA**: Fine-grained authorization policies evaluated per request
+
+> For detailed authentication and authorization flow diagrams and configuration, see [docs/SECURITY.md](docs/SECURITY.md)
 
 ---
 

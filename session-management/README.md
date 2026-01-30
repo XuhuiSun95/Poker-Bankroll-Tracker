@@ -11,15 +11,11 @@ This doc outlines the planned GraphQL contract for session tracking. It aligns w
 ### Base
 - **Endpoint**: `POST /graphql`
 - **Content-Type**: `application/json`
-- **Auth**: The service associates sessions with the authenticated user via Keycloak OIDC. The `user_id` is derived from the access token (validated via JWKS). Clients do not provide any user identifiers in inputs.
+- **Auth**: JWT is validated at the edge (e.g., Istio `RequestAuthentication`). The proxy forwards claims to this service via a header (see Environment variables). The app trusts that header; it does not perform JWKS validation.
 
 ### Environment variables
-- `OIDC_AUTHORIZATION_URL` (required): OIDC authorization URL
-- `OIDC_TOKEN_URL` (required): OIDC token URL
-- `OIDC_JWKS_URL` (required): JWKS URL
-- `OIDC_CLIENT_ID` (optional): Default `poker-bankroll-tracker`
-- `OIDC_PERMITTED_AUDIENCES` (optional): Default `["account"]`
-- `OIDC_APPLICATION_SCOPES_ENABLED` (optional, default `false`): when `true`, enforce `session:read` (queries/subscriptions) and `session:write` (mutations). DevOps must provision these scopes/roles in the IdP (e.g., Keycloak).
+- `JWT_PAYLOAD_HEADER` (optional): Header name carrying the JWT claims forwarded by the proxy. Default: `x-jwt-payload`.
+- `APPLICATION_SCOPES_ENABLED` (optional, default `false`): when `true`, enforce scopes from the payload: `session:read` for queries/subscriptions and `session:write` for mutations. DevOps must provision these scopes/roles in the IdP and configure the proxy to include them.
 
 ### Core Types
 - **Session**: Represents a poker session (for the current user)
@@ -169,31 +165,12 @@ Note: Monetary amounts are expressed in minor units (e.g., cents) to avoid float
   - `sessionEvents: SessionEvent!` (streams real-time events for the current user's session)
 
 Implementation status
-- Implemented: `currentSession`, `hasCurrentSession`, `startSession` (temporary simplified args)
-- Planned: `appendSessionEvents`, `endSession`, `discardSession`, `sessionEvents`
+- Implemented: `currentSession`, `hasCurrentSession`, `startSession` (input-based), `endSession`, `discardSession`
+- Planned: `appendSessionEvents`, `sessionEvents`
 
 ### Examples
 
-Start a session (current impl):
-
-```graphql
-mutation Start {
-  startSession(
-    playerName: "Alice"
-    playerLocationDisplayName: "Bellagio, Las Vegas"
-    gameType: CASH_GAME
-  ) {
-    status
-    version
-    playerName
-    gameType
-    buyIn { amountCents currency }
-    createdAt
-  }
-}
-```
-
-Start a session (planned input signature):
+Start a session:
 
 ```graphql
 mutation Start {
@@ -205,7 +182,7 @@ mutation Start {
         geo: { latitude: 36.1125, longitude: -115.1767 }
       }
       gameType: CASH_GAME
-      game: { smallBlindCents: 100, bigBlindCents: 200, anteCents: 0 }
+      gameStack: { smallBlindCents: 100, bigBlindCents: 200, anteCents: 0 }
       buyIn: { amountCents: 20000, currency: "USD" }
       startTime: "2025-08-09T16:30:00Z"
     }
@@ -235,7 +212,7 @@ mutation StartTournament {
         geo: { latitude: 36.1170, longitude: -115.1760 }
       }
       gameType: TOURNAMENT
-      game: {}
+      gameStack: {}
       buyIn: { amountCents: 100000, currency: "USD" }
       startTime: "2025-08-10T12:00:00Z"
     }
@@ -253,7 +230,7 @@ mutation StartTournament {
 }
 ```
 
-Append session events (batched):
+Append session events (planned, batched):
 
 ```graphql
 mutation AppendEvents {
@@ -372,7 +349,7 @@ mutation Discard {
 - Redis TTL: The session key has a TTL (sessions are short-lived). The TTL is refreshed on state-changing mutations. Optionally, a server-side heartbeat may extend TTL while the session is ACTIVE.
 
 #### Auth and roles
-- All operations require authentication. Suggested scopes: `session:read` for queries/subscriptions; `session:write` for mutations.
+- All operations require authentication. The edge proxy (e.g., Istio) validates JWTs and injects claims into `JWT_PAYLOAD_HEADER` (e.g., using `outputPayloadToHeader: x-jwt-payload`). This service reads `sub` (user id) and `scope` from that header. When scopes are enabled, use `session:read` for queries/subscriptions and `session:write` for mutations.
 
 #### Subscription delivery guarantees
 - Ordering: Events are delivered in order for a given user. Delivery is at-least-once; clients de-duplicate using `version`.
